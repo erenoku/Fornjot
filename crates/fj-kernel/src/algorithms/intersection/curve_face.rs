@@ -3,7 +3,7 @@ use fj_math::Scalar;
 use crate::{geometry::Curve, topology::Face};
 
 /// Determine the intersection between a [`Curve`] and a [`Face`]
-pub fn curve_face(curve: &Curve, face: &Face) -> Vec<[Scalar; 2]> {
+pub fn curve_face(curve: &Curve<3>, face: &Face) -> Vec<[Scalar; 2]> {
     let line = match curve {
         Curve::Line(line) => line,
         _ => todo!("Curve-face intersection only supports lines"),
