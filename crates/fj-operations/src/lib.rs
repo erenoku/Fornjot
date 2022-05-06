@@ -24,6 +24,7 @@ mod group;
 mod sketch;
 mod sweep;
 mod transform;
+mod union;
 
 use fj_interop::debug::DebugInfo;
 use fj_kernel::{
@@ -80,6 +81,7 @@ macro_rules! dispatch {
                         Self::Group(shape) => shape.$method($($arg_name,)*),
                         Self::Sweep(shape) => shape.$method($($arg_name,)*),
                         Self::Transform(shape) => shape.$method($($arg_name,)*),
+                        Self::Union(shape) => shape.$method($($arg_name,)*),
                     }
                 }
             )*

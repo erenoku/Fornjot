@@ -13,6 +13,9 @@ pub enum Shape3d {
 
     /// A transformed 3-dimensional shape
     Transform(Box<Transform>),
+
+    /// A union between two shapes
+    Union(Box<Union>),
 }
 
 impl From<Shape3d> for Shape {
@@ -128,5 +131,36 @@ impl From<Sweep> for Shape {
 impl From<Sweep> for Shape3d {
     fn from(shape: Sweep) -> Self {
         Self::Sweep(shape)
+    }
+}
+
+/// A union between two shapes
+#[derive(Clone, Debug)]
+#[repr(C)]
+pub struct Union {
+    shapes: [Shape3d; 2],
+}
+
+impl Union {
+    /// Create a `Union` from two shapes
+    pub fn from_shapes(shapes: [Shape3d; 2]) -> Self {
+        Self { shapes }
+    }
+
+    /// Access the shapes that make up the union
+    pub fn shapes(&self) -> &[Shape3d; 2] {
+        &self.shapes
+    }
+}
+
+impl From<Union> for Shape {
+    fn from(shape: Union) -> Self {
+        Self::Shape3d(shape.into())
+    }
+}
+
+impl From<Union> for Shape3d {
+    fn from(shape: Union) -> Self {
+        Self::Union(Box::new(shape))
     }
 }
