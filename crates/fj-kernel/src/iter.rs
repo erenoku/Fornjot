@@ -437,6 +437,12 @@ impl<T> Iterator for Iter<T> {
     }
 }
 
+impl<T> DoubleEndedIterator for Iter<T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        self.0.pop_back()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
