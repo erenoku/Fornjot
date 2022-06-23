@@ -144,6 +144,9 @@ impl Sweep {
                     );
                     let edge_top = LocalForm::new(
                         Edge {
+                            // TASK: This can't be right, can it? This is the
+                            // top edge, so the source curve must be translated
+                            // on the side face to produce the top curve.
                             curve: edge_source.local().curve.clone(),
                             vertices: edge_top.get().vertices,
                         },
