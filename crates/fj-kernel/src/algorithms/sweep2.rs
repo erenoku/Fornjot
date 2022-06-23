@@ -22,6 +22,14 @@ pub fn sweep(
 
     let mut target = Shape::new();
 
+    for face in source.face_iter() {
+        create_bottom_face(
+            face,
+            is_sweep_along_negative_direction,
+            &mut target,
+        );
+    }
+
     for edge in source.edge_iter() {
         if let Some(vertices) = edge.vertices() {
             create_non_continuous_side_face(
@@ -38,6 +46,23 @@ pub fn sweep(
     }
 
     target
+}
+
+fn create_bottom_face(
+    face: Face,
+    is_sweep_along_negative_direction: bool,
+    target: &mut Shape,
+) {
+    let surface = target.insert(face.surface());
+
+    let exteriors = face.brep().exteriors.as_local_form().cloned();
+    let interiors = face.brep().interiors.as_local_form().cloned();
+
+    let face = Face::new(surface, exteriors, interiors, face.color());
+    target.merge(face);
+
+    // TASK: Implement.
+    let _ = is_sweep_along_negative_direction;
 }
 
 fn create_non_continuous_side_face(
@@ -185,8 +210,39 @@ mod tests {
     use super::sweep;
 
     #[test]
-    fn side_faces_positive() -> anyhow::Result<()> {
-        test_side_faces(
+    fn bottom_positive() -> anyhow::Result<()> {
+        let tolerance = Tolerance::from_scalar(Scalar::ONE)?;
+
+        let mut shape = Shape::new();
+
+        let surface = Surface::xy_plane();
+        let _sketch = Face::builder(surface, &mut shape)
+            .with_exterior_polygon([[0., 0.], [1., 0.], [0., 1.]])
+            .build();
+
+        let solid = sweep(shape, [0., 0., 1.], tolerance, [255, 0, 0, 255]);
+
+        let mut shape = Shape::new();
+        // let surface = Surface::SweptCurve(SweptCurve {
+        //     curve: Curve::Line(Line {
+        //         origin: Point::origin(),
+        //         direction: -Vector::unit_x(),
+        //     }),
+        //     path: Vector::unit_y(),
+        // });
+        let face = Face::builder(surface, &mut shape)
+            .with_exterior_polygon([[0., 0.], [0., 1.], [1., 0.]])
+            .build()
+            .get();
+
+        assert!(solid.face_iter().any(|f| f == face));
+
+        Ok(())
+    }
+
+    #[test]
+    fn side_positive() -> anyhow::Result<()> {
+        test_side(
             [0., 0., 1.],
             [
                 Surface::plane_from_points([
@@ -209,8 +265,8 @@ mod tests {
     }
 
     #[test]
-    fn side_faces_negative() -> anyhow::Result<()> {
-        test_side_faces(
+    fn side_negative() -> anyhow::Result<()> {
+        test_side(
             [0., 0., -1.],
             [
                 Surface::plane_from_points([
@@ -232,7 +288,7 @@ mod tests {
         )
     }
 
-    fn test_side_faces(
+    fn test_side(
         direction: impl Into<Vector<3>>,
         expected_surfaces: [Surface; 3],
     ) -> anyhow::Result<()> {
